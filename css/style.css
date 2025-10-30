@@ -1,0 +1,14 @@
+/* usamos la etiqueta body para poner un fondo a toda la pagina */
+body {
+    /* un degradado suave que recuerda a pokemon */
+    background: linear-gradient(to right, #4a90e2, #50e3c2);
+    font-family: Arial, sans-serif;
+}
+
+/* le damos unos toques a la tarjeta de login
+   para que no sea totalmente blanca y tenga bordes mas suaves
+*/
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+}
