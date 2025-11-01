@@ -33,6 +33,13 @@ document.addEventListener('DOMContentLoaded', function() {
     var configuracion = {
         type: 'doughnut',
         data: datos,
+        options: {
+            // le decimos que sea responsivo
+            responsive: true,
+            // le decimos que no mantenga la relacion de aspecto
+            // y que se ajuste al contenedor
+            maintainAspectRatio: false
+        }
     };
 
     // 4 crear el grafico!
