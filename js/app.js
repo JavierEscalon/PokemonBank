@@ -1,6 +1,26 @@
 // esperamos a que todo el html este cargado
 document.addEventListener('DOMContentLoaded', function() {
 
+    /**
+     * definimos las reglas de validacion para los montos
+     * usando la libreria validate.js
+     */
+    const reglasDeValidacion = {
+        // el nombre 'monto' debe coincidir con el que usaremos
+        monto: {
+            // el monto debe existir
+            presence: {
+                message: "^El monto no puede estar vacío."
+            },
+            // debe ser un numero
+            numericality: {
+                // no puede ser solo ceros
+                greaterThan: 0, 
+                message: "^El monto debe ser un número mayor a 0."
+            }
+        }
+    };
+
     //logica para el funcionamiento del boton salir en el navbar
 
     // buscamos el boton de salir por su id
@@ -106,7 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('transacciones', JSON.stringify(transacciones));
 
         // --- exito ---
-        swal("transaccion exitosa", descripcion + " por $" + monto.toFixed(2), "success");
+        swal("transaccion exitosa", descripcion + " por $" + monto.toFixed(2), "success").then(function() {
+            // cuando el usuario cierre la alerta de exito, generamos el pdf
+            generarComprobante(nuevaTransaccion);
+        });
 
         // actualizamos el saldo en la pagina
         cargarSaldo();
@@ -130,11 +153,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 button: "depositar",
             })
             .then(function(valor) {
-                var monto = parseFloat(valor);
-                if (monto > 0) {
-                    realizarTransaccion('Depósito', 'Depósito en cajero', monto);
+                // 1 validamos usando la libreria
+                // creamos un objeto {monto: valor} para que coincida con nuestras 'reglas'
+                var errores = validate({ monto: valor }, reglasDeValidacion);
+
+                if (errores) {
+                    // si hay errores, mostramos el primer mensaje de error
+                    // el error[0] saca el primer mensaje del array de errores
+                    swal("Error de validación", errores.monto[0], "warning");
                 } else {
-                    swal("monto invalido", "por favor ingresa un numero valido.", "warning");
+                    // no hay errores, procedemos
+                    var monto = parseFloat(valor);
+                    realizarTransaccion('Depósito', 'Depósito en cajero', monto);
                 }
             });
         });
@@ -147,11 +177,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 button: "retirar",
             })
             .then(function(valor) {
-                var monto = parseFloat(valor);
-                if (monto > 0) {
-                    realizarTransaccion('Retiro', 'Retiro en cajero', monto);
+                var errores = validate({ monto: valor }, reglasDeValidacion);
+                if (errores) {
+                    swal("Error de validación", errores.monto[0], "warning");
                 } else {
-                    swal("monto invalido", "por favor ingresa un numero valido.", "warning");
+                    var monto = parseFloat(valor);
+                    realizarTransaccion('Retiro', 'Retiro en cajero', monto);
                 }
             });
         });
@@ -164,12 +195,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 button: "pagar",
             })
             .then(function(valor) {
-                var monto = parseFloat(valor);
-                if (monto > 0) {
-                    // tu puedes cambiar pago de servicio por algo mas especifico
-                    realizarTransaccion('Servicio', 'Pago de servicio', monto); 
+                var errores = validate({ monto: valor }, reglasDeValidacion);
+                if (errores) {
+                    swal("Error de validación", errores.monto[0], "warning");
                 } else {
-                    swal("monto invalido", "por favor ingresa un numero valido.", "warning");
+                    var monto = parseFloat(valor);
+                    realizarTransaccion('Servicio', 'Pago de servicio', monto); 
                 }
             });
         });
@@ -177,4 +208,58 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+/**
+ * esta funcion genera un comprobante en pdf usando jspdf
+ * con los datos de una transaccion especifica
+ */
+function generarComprobante(transaccion) {
+    // esto es necesario para que jspdf funcione bien
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
+    // --- 1 obtenemos datos guardados ---
+    var usuario = localStorage.getItem('usuario');
+    var cuenta = localStorage.getItem('cuenta');
+    var saldo = parseFloat(localStorage.getItem('saldo')).toFixed(2);
+    var fecha = new Date().toLocaleString('es-SV'); // formato local dd/mm/aaaa, hh:mm:ss
+
+    // --- 2 dibujamos el pdf ---
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('Pokemon Bank - Comprobante', 105, 20, { align: 'center' }); // titulo
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${fecha}`, 20, 40);
+    doc.text(`Cliente: ${usuario}`, 20, 50);
+    doc.text(`Cuenta: ${cuenta}`, 20, 60);
+    
+    // linea divisoria
+    doc.line(20, 70, 190, 70); 
+
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Detalle de la Transaccion', 20, 80);
+
+    doc.setFont('Helvetica', 'normal');
+    doc.text(`Tipo: ${transaccion.tipo}`, 20, 90);
+    doc.text(`Descripcion: ${transaccion.descripcion}`, 20, 100);
+
+    // formateamos el monto
+    var montoFormateado = transaccion.monto.toFixed(2);
+    doc.setFont('Helvetica', 'bold');
+    if (transaccion.tipo === 'Depósito') {
+        doc.text(`Monto: +$${montoFormateado}`, 20, 110);
+    } else {
+        doc.text(`Monto: -$${montoFormateado}`, 20, 110);
+    }
+    
+    // linea divisoria
+    doc.line(20, 120, 190, 120);
+
+    doc.setFontSize(16);
+    doc.text(`Nuevo Saldo: $${saldo}`, 20, 130);
+
+    // --- 3 guardamos el archivo ---
+    doc.save('comprobante-pokemon-bank.pdf');
+}

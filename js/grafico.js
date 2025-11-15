@@ -4,18 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var transacciones = JSON.parse(localStorage.getItem('transacciones'));
 
     // 2 procesamos los datos
-    var totalDepositos = 0;
-    var totalRetiros = 0;
-    var totalServicios = 0;
+    var cantidadDepositos = 0;
+    var cantidadRetiros = 0;
+    var cantidadServicios = 0;
 
     if (transacciones) {
         transacciones.forEach(function(trans) {
             if (trans.tipo === 'Depósito') {
-                totalDepositos += trans.monto;
+                cantidadDepositos++; // aumenta 1 al contador
             } else if (trans.tipo === 'Retiro') {
-                totalRetiros += trans.monto;
+                cantidadRetiros++;   // aumenta 1 al contador
             } else if (trans.tipo === 'Servicio') {
-                totalServicios += trans.monto;
+                cantidadServicios++; // aumenta 1 al contador
             }
         });
     }
@@ -26,13 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 4 definir los datos para el grafico dinamicos
     var datos = {
         labels: [
-            'depositos',
-            'retiros',
-            'pago de servicios'
+            'depositos (' + cantidadDepositos + ')',
+            'retiros (' + cantidadRetiros + ')',
+            'pago de servicios (' + cantidadServicios + ')'
         ],
         datasets: [{
-            label: 'resumen de transacciones',
-            data: [totalDepositos, totalRetiros, totalServicios], // datos dinamicos
+            label: 'Número de transacciones',
+            data: [cantidadDepositos, cantidadRetiros, cantidadServicios], // datos dinamicos
             backgroundColor: [
                 'rgb(75, 192, 192)',
                 'rgb(255, 99, 132)',
@@ -48,7 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
         data: datos,
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Conteo de Transacciones por Tipo'
+                }
+            }
         }
     };
 

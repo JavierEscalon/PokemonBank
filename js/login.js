@@ -2,8 +2,11 @@
 // esperamos a que la pagina cargue
 document.addEventListener('DOMContentLoaded', function() {
 
-    // pin correcto para simular
+    // Definimos valores del usuario
     const pinCorrecto = '1234';
+    const nombreUsuario = 'Ash Ketchum';
+    const numeroCuenta = '0987654321';
+    const saldoInicial = 500.00;
 
     // buscamos el formulario
     var loginForm = document.querySelector('form');
@@ -21,13 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // si es correcto, inicializamos la base de datos
 
             // guardamos los datos del usuario
-            localStorage.setItem('usuario', 'Francisco Rosales');
-            localStorage.setItem('cuenta', '1234-5678');
-            localStorage.setItem('saldo', '1500'); // saldo inicial
+            localStorage.setItem('usuario', nombreUsuario);
+            localStorage.setItem('cuenta', numeroCuenta);
+            localStorage.setItem('saldo', saldoInicial.toString()); // saldo inicial
 
             // guardamos las transacciones iniciales (como texto json)
             var transaccionesIniciales = [
-                { fecha: '2025-10-30', tipo: 'Depósito', descripcion: 'Deposito inicial', monto: 1500 }
+                { fecha: '2025-11-10', tipo: 'Depósito', descripcion: 'Deposito inicial', monto: saldoInicial }
             ];
             // stringify convierte un array en un simple texto para guardarlo
             localStorage.setItem('transacciones', JSON.stringify(transaccionesIniciales));
