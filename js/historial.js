@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var transacciones = JSON.parse(localStorage.getItem('transacciones'));
     var tablaBody = document.getElementById('tabla-historial');
 
+    // verificamos que existan transacciones
     if (transacciones && transacciones.length > 0) {
 
         // ordenamos el array por fecha, de mas nuevo a mas viejo

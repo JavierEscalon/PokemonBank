@@ -21,19 +21,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 3 comparamos
         if (pinIngresado === pinCorrecto) {
-            // si es correcto, inicializamos la base de datos
 
-            // guardamos los datos del usuario
+            // verificamos si el usuario ya existe en localStorage
+            // si no existe, lo creamos
+            if (localStorage.getItem('usuario') === null) {
+
+            // guardamos los datos del usuario por primera vez
             localStorage.setItem('usuario', nombreUsuario);
             localStorage.setItem('cuenta', numeroCuenta);
             localStorage.setItem('saldo', saldoInicial.toString()); // saldo inicial
 
             // guardamos las transacciones iniciales (como texto json)
             var transaccionesIniciales = [
-                { fecha: '2025-11-10', tipo: 'Depósito', descripcion: 'Deposito inicial', monto: saldoInicial }
+                { fecha: new Date().toISOString().slice(0, 10), tipo: 'Depósito', descripcion: 'Deposito inicial', monto: saldoInicial }
             ];
             // stringify convierte un array en un simple texto para guardarlo
             localStorage.setItem('transacciones', JSON.stringify(transaccionesIniciales));
+        }
 
             // todo salio bien, lo mandamos a la pagina de acciones
             window.location.href = 'acciones.html';
